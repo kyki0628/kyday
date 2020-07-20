@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ydto">
+
+	<!-- 가입 입력 쿼리 -->
+	<insert id="insertregist" parameterType="kkk.kkk.kkk.DTO">
+		insert into users
+		values(#{id}, #{password}, #{tel}, #{code}, sysdate)
+	</insert>
+
+	<!-- 로그인 확인 쿼리 -->
+	<select id="logincheck" resultType="int">
+		select count(*) from users
+		where id = #{id} and password = #{password}
+	</select>
+
+	<!-- 작성된 결과 저장 -->
+	<insert id="writesave" parameterType="kkk.kkk.kkk.DTO">
+		insert into write values(#{id}, cont_num_seq.nextval ,#{title}, #{content}, sysdate, 0)
+	</insert>
+
+	<!-- 게시물 전체 갯수 -->
+	<select id="dbcount" resultType="int">
+		select count(*) from write
+	</select>
+
+	<!-- 메인화면 조회수 순으로 출력 쿼리 -->
+	<select id="dbcommentatoz" resultType="kkk.kkk.kkk.DTO" parameterType="int">
+		select * from (select rownum rn , w.id, w.title, w.content, to_char(w.wdate, 'YYYY-MM-DD'), w.hit from (select * from write order by hit desc) w ) where rn between #{start} and #{end}
+	</select>
+
+	<!--게시판 데이터 쿼리 -->
+	<select id="dbcommentatoz1" resultType="kkk.kkk.kkk.DTO" parameterType="int">
+		select * from (select rownum rn , w.id, w.title, w.cont_num, w.content, to_char(w.wdate, 'YYYY-MM-DD') as wdate , w.hit from (select * from write order by wdate desc) w ) where rn between #{start} and #{end}
+	</select>
+
+	<!-- 상세화면 쿼리 -->
+	<select id="dbshowdetail" resultType="kkk.kkk.kkk.DTO" parameterType="kkk.kkk.kkk.DTO">
+		select * from write where cont_num=#{cont_num}
+	</select>
+
+	<update id="updatecontent" parameterType="kkk.kkk.kkk.DTO">
+		update write set content=#{content} , title=#{title} where cont_num=#{cont_num}
+	</update>
+
+	<delete id="deletecontent">
+		delete write where cont_num=#{num}
+	</delete>
+
+	<insert id="dbreplysave" parameterType="kkk.kkk.kkk.DTO">
+		insert into reply values(#{id}, reply_seq.nextval, #{cont_num}, #{reply_content}, sysdate)
+	</insert>
+
+	<select id="dbshowreply" resultType="kkk.kkk.kkk.DTO" parameterType="int">
+		select rownum r_rn, r.id, r.reply_num, r.num, r.reply_content, to_char(r.rdate, 'YYYY-MM-DD') as rdate from (select * from reply order by rdate)r where num=#{cont_num}
+	</select>
+
+	<select id="dbnextcontentnum" parameterType="int" resultType="int">
+		select cont_num from (select w.cont_num, rownum rn  from (select * from write order by wdate desc) w) where rn = #{rn}+1
+	</select>
+	
+	<select id="dblastcontentnum" parameterType="int"  resultType="int">
+		select cont_num from (select w.cont_num, rownum rn  from (select * from write order by wdate desc) w) where rn = #{rn}-1
+	</select>
+
+
+
+</mapper>
